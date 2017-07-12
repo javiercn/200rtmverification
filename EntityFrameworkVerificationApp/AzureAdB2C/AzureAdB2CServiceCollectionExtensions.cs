@@ -23,8 +23,10 @@ namespace Microsoft.AspNetCore.Authentication.Extensions
 
             services.AddSingleton<IConfigureOptions<AzureAdB2COptions>, BindAzureAdB2COptions>();
             services.AddSingleton<IPostConfigureOptions<OpenIdConnectOptions>, PostConfigureAzureOptions>();
-            services.AddOpenIdConnectAuthentication();
-            services.AddCookieAuthentication();
+            services.AddAuthentication()
+                .AddOpenIdConnect()
+                .AddCookie();
+
             return services;
         }
 
@@ -74,7 +76,7 @@ namespace Microsoft.AspNetCore.Authentication.Extensions
                 return Task.FromResult(0);
             }
  
-            public Task OnRemoteFailure(FailureContext context)
+            public Task OnRemoteFailure(RemoteFailureContext context)
             {
                 context.HandleResponse();
                 // Handle the error code that Azure AD B2C throws when trying to reset a password from the login page 
