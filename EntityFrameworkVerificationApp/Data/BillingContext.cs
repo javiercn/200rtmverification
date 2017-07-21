@@ -10,9 +10,30 @@ namespace EntityFrameworkVerificationApp.Data
         {
         }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Customer>(customer =>
+            {
+                customer.OwnsOne(c => c.CreditCard).ToTable("CreditCards");
+                customer.HasMany(c => c.Invoices).WithOne();
+            });
+
+            modelBuilder.Entity<Invoice>(invoice =>
+            {
+                invoice.OwnsOne(i => i.BillingAddress);
+                invoice.HasMany(i => i.Details).WithOne();
+            });
+
+            modelBuilder.Entity<InvoiceLine>(invoiceLine =>
+            {
+                invoiceLine.HasOne(line => line.Item).WithMany();
+            });
+        }
+
         public DbSet<Customer> Customers { get; set; }
-        public DbSet<Order> Orders { get; set; }
-        public DbSet<OrderLine> OrderLines { get; set; }
+        public DbSet<Invoice> Orders { get; set; }
+        public DbSet<InvoiceLine> OrderLines { get; set; }
         public DbSet<Item> Items { get; set; }
     }
 
@@ -20,17 +41,17 @@ namespace EntityFrameworkVerificationApp.Data
     {
         public string Id { get; set; }
         public CreditCard CreditCard { get; set; }
-        public ICollection<Order> OrderHistory { get; set; }
+        public ICollection<Invoice> Invoices { get; set; }
     }
 
-    public class Order
+    public class Invoice
     {
-        public int OrderId { get; set; }
+        public int Id { get; set; }
         public Address BillingAddress { get; set; }
-        public ICollection<OrderLine> Details { get; set; }
+        public ICollection<InvoiceLine> Details { get; set; }
     }
 
-    public class OrderLine
+    public class InvoiceLine
     {
         public int Id { get; set; }
         public Item Item { get; set; }

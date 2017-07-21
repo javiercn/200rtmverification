@@ -10,38 +10,46 @@ namespace EntityFrameworkVerificationApp.Data
         {
         }
 
+        public DbSet<Movie> Movies { get; set; }
+        public DbSet<Artist> Artists { get; set; }
+        public DbSet<MovieArtist> MovieArtists { get; set; }
+        public DbSet<MovieDetails> MovieDetails { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
             modelBuilder.Entity<Movie>(movie =>
             {
                 movie
                     .HasMany(m => m.Cast)
-                    .WithOne()
+                    .WithOne(o => o.Movie)
                     .HasForeignKey(f => f.MovieId);
-                movie.OwnsOne(m => m.Details);
+                movie.HasOne(m => m.Details);
             });
 
             modelBuilder.Entity<Artist>(artist =>
             {
                 artist
                     .HasMany(a => a.Movies)
-                    .WithOne()
+                    .WithOne(o => o.Artist)
                     .HasForeignKey(f => f.ArtistId);
-                artist.OwnsOne(
-                    a => a.PersonalInformation,
-                    builder => builder.OwnsOne(pi => pi.BirthPlace));
+                artist.OwnsOne(a => a.PersonalInformation, builder => builder.OwnsOne(pi => pi.BirthPlace));
             });
 
             modelBuilder.Entity<MovieArtist>(movieArtist =>
             {
                 movieArtist.HasKey(ma => new { ma.MovieId, ma.ArtistId });
+                movieArtist
+                    .HasOne(a => a.Artist)
+                    .WithMany(a => a.Movies)
+                    .HasForeignKey(a => a.ArtistId);
+                movieArtist
+                    .HasOne(a => a.Movie)
+                    .WithMany(m => m.Cast)
+                    .HasForeignKey(m => m.MovieId);                    
             });
         }
-
-        public DbSet<Movie> Movies { get; set; }
-        public DbSet<Artist> Artists { get; set; }
-        public DbSet<MovieArtist> MovieArtists { get; set; }
     }
 
     public class Movie
@@ -55,6 +63,7 @@ namespace EntityFrameworkVerificationApp.Data
 
     public class MovieDetails
     {
+        public int Id { get; set; }
         public DateTimeOffset ReleaseDate { get; set; }
         public string Country { get; set; }
         public string Language { get; set; }
@@ -83,6 +92,7 @@ namespace EntityFrameworkVerificationApp.Data
         public string LastName { get; set; }
         public DateTimeOffset BirthDate { get; set; }
         public BirthPlace BirthPlace { get; set; }
+        public string Biography { get; set; }
     }
 
     public class BirthPlace

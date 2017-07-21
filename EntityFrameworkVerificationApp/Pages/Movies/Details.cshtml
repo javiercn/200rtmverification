@@ -1,0 +1,226 @@
+﻿@page "{id}"
+@using Microsoft.EntityFrameworkCore;
+@using System.Security.Claims;
+@inject CatalogContext Catalog;
+@inject ReviewsContext Reviews;
+@{
+    Layout = "_Layout";
+}
+
+@functions{
+    [BindProperty(SupportsGet = true)]
+    public int Id { get; set; }
+
+    public IList<Review> CreateFlattenedReviewsList(ICollection<Review> reviews)
+    {
+        if (reviews == null || reviews.Count == 0)
+        {
+            return Array.Empty<Review>();
+        }
+
+        var result = new List<Review>();
+        foreach (var review in reviews.OrderBy(r => r.Details.PublishDate))
+        {
+            result.Add(review);
+            result.AddRange(CreateFlattenedReviewsList(review.Replies));
+        }
+
+        return result;
+    }
+
+    public string CalculateTime(Review review)
+    {
+        var span = DateTimeOffset.UtcNow - review.Details.PublishDate;
+        if (span.Days > 365)
+        {
+            return span.Days / 365 == 1 ? "1 year ago" : $"{span.Days / 365} years ago";
+        }
+        if (span.Days > 0)
+        {
+            return span.Days == 1 ? "1 day ago" : $"{span.Days} days ago";
+        }
+        if (span.Hours > 0)
+        {
+            return span.Hours == 1 ? "1 hour ago" : $"{span.Hours} hours ago";
+        }
+        if (span.Minutes > 0)
+        {
+            return span.Minutes == 1 ? $"1 minute ago" : $"{span.Minutes} minutes ago";
+        }
+        if (span.Seconds > 0)
+        {
+            return span.Seconds == 1 ? $"1 seconds ago" : $"{span.Seconds} seconds ago";
+        }
+
+        return "just now";
+    }
+
+    //public async Task<IActionResult> OnPostDelete([FromForm] int commentId)
+    //{
+    //    if (!ModelState.IsValid)
+    //    {
+    //        return Page();
+    //    }
+
+    //    var review = await Reviews.Reviews.FindAsync(commentId);
+    //    if (!review.Details.AuthorId.Equals(User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
+    //    {
+    //        return
+    //    }
+    //}
+}
+
+@{
+    var comments = await Reviews.Reviews.Where(r => r.TopicId == Id).ToListAsync();
+    comments = comments.Where(c => c.ReplyTo == null).ToList();
+
+    var movie = await Catalog.Movies.Where(m => m.Id == Id)
+        .Include(m => m.Details)
+        .Include(m => m.Cast)
+        .ThenInclude(c => c.Artist)
+        .ThenInclude(a => a.PersonalInformation)
+        .ThenInclude(p => p.BirthPlace)
+        .SingleOrDefaultAsync();
+
+    var artists = movie.Cast.Select(c => c.Artist).ToList();
+}
+
+<style>
+    .movie-details h1, .movie-details > img {
+        text-align: center;
+        display: block;
+        margin: auto;
+    }
+
+    .movie-details-details p span {
+        font-weight: bold;
+    }
+
+    .cast {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min-content,200px));
+        justify-content: space-between;
+        padding-left: 0px;
+        list-style-type: none;
+    }
+
+    .artist {
+    }
+
+        .artist img {
+            width: 200px;
+        }
+
+    .movie-comments {
+        width: 60%;
+    }
+
+    .movie-comment {
+        background-color: lightgray;
+    }
+
+    .movie-comment-author {
+        float: left;
+    }
+
+    .movie-comment > header {
+        color: white;
+        background-color: gray;
+        overflow: auto;
+    }
+
+        .movie-comment > header a {
+            color: white;
+        }
+
+    .movie-comment-details {
+        font-size: 0px;
+        float: right;
+        display: inline-block;
+    }
+
+        .movie-comment-details * {
+            font-size: 14px;
+        }
+
+        .movie-comment-details > span {
+            float: right;
+        }
+
+    .movie-comment-remove {
+        padding: 0px;
+        margin: 0px;
+        border: 0px;
+        display: inline;
+    }
+
+        .movie-comment-remove * {
+            padding: 0px;
+            margin: 0px;
+            border: none;
+        }
+
+        .movie-comment-remove > input[type=submit] {
+            display: inline;
+            background: none;
+            border: none;
+            font-size: 1em;
+            color: white;
+        }
+</style>
+
+<article class="movie-details">
+    <h1>@movie.Title</h1>
+    <img src="@Url.Content(movie.Details.PosterUrl)" />
+    <h2>Plot</h2>
+    <p>@movie.Description</p>
+    <section class="movie-details-details">
+        <h2>Details</h2>
+        <p><span>Language</span> @movie.Details.Language</p>
+        <p><span>Country</span> @movie.Details.Country</p>
+    </section>
+    <section class="movie-comments">
+        <h2>Reviews</h2>
+        @foreach (var review in CreateFlattenedReviewsList(comments))
+        {
+            <section class="movie-comment">
+                <header>
+                    <a href="#@review.Id">#@review.Id @review.Details.Author</a>
+                    <div class="movie-comment-details">
+                        @if (User.Identity.IsAuthenticated && review.Details.AuthorId.Equals(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value))
+                        {
+                            <form class="movie-comment-remove" asp-page-handler="delete" asp-route-id="@Id">
+                                <input type="hidden" name="CommentId" value="@review.Id" />
+                                <input type="submit" value="Remove" /></form>
+                                <span>@CalculateTime(review)</span>
+                        }
+                        else
+                        {
+                            <span>@CalculateTime(review)</span>
+                        }
+                        @if (review.ReplyTo != null)
+                        {
+                            <br />
+                            <span>Replies to <a href="#@review.ReplyToId">@review.ReplyTo.Details.Author</a></span>
+                        }
+                    </div>
+                </header>
+                <p class="movie-comment-content">@review.Details.Body</p>
+            </section>
+        }
+    </section>
+
+    <h2>Cast</h2>
+    <ul class="cast">
+        @foreach (var artist in artists)
+        {
+            <li class="artist">
+                <a asp-page="/Artists/Profile/Index" asp-route-id="@artist.Id"><img src="@Url.Content(artist.ImageUrl)" /></a>
+                <p>
+                    @artist.PersonalInformation.GivenName @artist.PersonalInformation.LastName <br />
+                    @artist.PersonalInformation.BirthDate.ToString("MM/dd/yyyy"), @artist.PersonalInformation.BirthPlace.City, @artist.PersonalInformation.BirthPlace.Country
+                </p>
+            </li>
+        }
+    </ul>
+</article>

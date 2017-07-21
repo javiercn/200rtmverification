@@ -10,24 +10,45 @@ namespace EntityFrameworkVerificationApp.Data
         {
         }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Show>(show =>
+            {
+                show.HasOne(s => s.Theater);
+                show.HasMany(s => s.Sessions);
+            });
+
+            modelBuilder.Entity<Theater>(theater =>
+            {
+                theater.OwnsOne(t => t.Location);
+            });
+            modelBuilder.Entity<Session>(session =>
+            {
+                session.HasMany(s => s.Seats);
+            });
+        }
+
         public DbSet<Show> Shows { get; set; }
         public DbSet<Session> Sessions { get; set; }
         public DbSet<Theater> Theaters { get; set; }
+        public DbSet<Seat> Seats { get; set; }
     }
 
     public class Show
     {
         public int Id { get; set; }
-        public int ShowId { get; set; }
+        public int MovieId { get; set; }
         public Theater Theater { get; set; }
         public ICollection<Session> Sessions { get; set; }
     }
 
     public class Theater
     {
-        public Address LocationAddress { get; set; }
+        public int Id { get; set; }
+        public Address Location { get; set; }
         public int Zones { get; set; }
-        public int SeatsPerZone { get; set; }
+        public int RowsPerZone { get; set; }
         public int SeatsPerRow { get; set; }
     }
 

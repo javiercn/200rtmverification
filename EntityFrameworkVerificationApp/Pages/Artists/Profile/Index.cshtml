@@ -1,0 +1,67 @@
+﻿@page "{id}"
+@using Microsoft.EntityFrameworkCore;
+@model IndexModel
+@inject CatalogContext Catalog;
+
+@{
+    Layout = "_Layout";
+    var artist = await Catalog.Artists
+        .SingleOrDefaultAsync(a => a.Id == Model.Id);
+    artist.Movies = await Catalog
+        .MovieArtists
+        .Where(ma => ma.ArtistId == artist.Id)
+        .Include(ma => ma.Movie)
+        .ThenInclude(m => m.Details)
+        .OrderBy(m => m.Movie.Details.ReleaseDate)
+        .ToListAsync();
+}
+
+<style>
+    .artist-details {
+    }
+
+    .artist-details-label {
+        font-size: 1.4em;
+        font-weight: bolder;
+    }
+
+    .artist-details img {
+        width: 200px;
+    }
+
+    .filmography {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min-content, 200px));
+        justify-content: space-between;
+        list-style-type: none;
+        padding-left: 0px;
+    }
+
+        .filmography .film {
+            width: 200px;
+            text-align: center;
+        }
+</style>
+
+<article class="artist-details">
+    <h1>@artist.PersonalInformation.GivenName @artist.PersonalInformation.LastName</h1>
+    <img src="@Url.Content(artist.ImageUrl)" />
+    <section class="artist-details-details">
+        <h2>Details</h2>
+        <p><span class="artist-details-label">Bio</span><br />@artist.PersonalInformation.Biography</p>
+        <p><span class="artist-details-label">Age</span> @(DateTimeOffset.UtcNow.Year - @artist.PersonalInformation.BirthDate.Year) (@artist.PersonalInformation.BirthDate.ToString("MM/dd/yyy"))</p>
+        <p><span class="artist-details-label">Born in</span> @artist.PersonalInformation.BirthPlace.City, @artist.PersonalInformation.BirthPlace.Country</p>
+    </section>
+    <section>
+        <h2>Philmography</h2>
+        <ul class="filmography">
+            @foreach (var movie in artist.Movies.Select(m => m.Movie).OrderBy(m => m.Details.ReleaseDate))
+            {
+                <li class="film">
+                    <a asp-page="/Movies/Details" asp-route-id="@movie.Id"><img src="@Url.Content(movie.Details.PosterUrl)" /></a>
+                    <h3>@movie.Title</h3>
+                </li>
+            }
+        </ul>
+    </section>
+</article>
