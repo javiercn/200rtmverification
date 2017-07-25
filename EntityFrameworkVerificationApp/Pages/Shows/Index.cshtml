@@ -1,0 +1,49 @@
+﻿@page "{movieId}"
+@model IndexModel
+@{
+    Layout = "_Layout";
+}
+
+<style type="text/css">
+
+</style>
+
+<article>
+    <section class="movie-brief">
+        <h1>@Model.Movie.Title</h1>
+        <img src="@Url.Content(Model.Movie.Details.PosterUrl)" />
+        <ul>
+            <li><a asp-page="/Movies/Index" asp-route-id="@Model.Movie.Id">@Model.Movie.Title</a></li>
+            <li>@Model.Movie.Description</li>
+            <li>
+                Stars:
+                <ul>
+                    @for (int i = 0; i < Model.Cast.Count; i++)
+                    {
+                        <li>@Model.Cast[i].PersonalInformation.GivenName @Model.Cast[i].PersonalInformation.LastName</li>
+                    }
+                </ul>
+            </li>
+        </ul>
+    </section>
+    <section class="movie-shows">
+        <ul>
+        @foreach (var show in Model.Shows)
+        {
+            var location = show.Theater.Location;
+            <li>
+                <div>
+                    <h4>@show.Theater.Name</h4>
+                    <p>@location.Street, @location.City @location.Province @location.ZipCode</p>
+                    <ul>
+                        @foreach (var session in Model.GetTodaysSessions(show))
+                        {
+                            <li>@session.Start.TimeOfDay</li>
+                        }
+                    </ul>
+                </div>
+            </li>
+        }
+        </ul>
+    </section>
+</article>

@@ -31,6 +31,9 @@ namespace EntityFrameworkVerificationApp
             services.AddDbContext<ReviewsContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("Reviews")));
 
+            services.AddDbContext<ShowsContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("Shows")));
+
             if (Environment.IsDevelopment())
             {
                 services.AddTransient<IStartupFilter, DatabaseInitializer>();
@@ -129,8 +132,83 @@ namespace EntityFrameworkVerificationApp
                             }
                         }
                     });
-
                     reviews.SaveChanges();
+
+                    var shows = scope.ServiceProvider.GetRequiredService<ShowsContext>();
+                    shows.Database.EnsureDeleted();
+                    shows.Database.EnsureCreated();
+                    shows.Shows.AddRange(new Show[]
+                    {
+                        new Show
+                        {
+                            MovieId = 12,
+                            Theater = new Theater
+                            {
+                                Name = "Theater 1",
+                                Zones = 2,
+                                RowsPerZone = 10,
+                                SeatsPerRow = 5,
+                                Location = new Address
+                                {
+                                    Street = "Street 1",
+                                    ZipCode = "11111",
+                                    City = "City 1",
+                                    Province = "State 1",
+                                    Country = "Country 1"
+                                }
+                            },
+                            Sessions = new List<Session>
+                            {
+                                new Session
+                                {
+                                    Start = DateTimeOffset.UtcNow.Date + TimeSpan.FromHours(16)
+                                },
+                                new Session
+                                {
+                                    Start = DateTimeOffset.UtcNow.Date + TimeSpan.FromHours(19)
+                                },
+                                new Session
+                                {
+                                    Start = DateTimeOffset.UtcNow.Date + TimeSpan.FromHours(21)
+                                }
+                            }
+                        },
+                        new Show
+                        {
+                            MovieId = 12,
+                            Theater = new Theater
+                            {
+                                Name = "Theater 2",
+                                Zones = 3,
+                                RowsPerZone = 15,
+                                SeatsPerRow = 8,
+                                Location = new Address
+                                {
+                                    Street = "Street 2",
+                                    ZipCode = "22222",
+                                    City = "City 2",
+                                    Province = "State 2",
+                                    Country = "Country 2"
+                                }
+                            },
+                            Sessions = new List<Session>
+                            {
+                                new Session
+                                {
+                                    Start = DateTimeOffset.UtcNow.Date + TimeSpan.FromHours(17)
+                                },
+                                new Session
+                                {
+                                    Start = DateTimeOffset.UtcNow.Date + TimeSpan.FromHours(20)
+                                },
+                                new Session
+                                {
+                                    Start = DateTimeOffset.UtcNow.Date + TimeSpan.FromHours(22)
+                                }
+                            }
+                        }
+                    });
+                    shows.SaveChanges();
                 }
 
                 IEnumerable<Movie> CreateMovies(int seed)

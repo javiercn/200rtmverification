@@ -1,8 +1,11 @@
 ﻿@page "{id}"
+@using Microsoft.AspNetCore.Authorization;
 @using Microsoft.EntityFrameworkCore;
 @using System.Security.Claims;
 @inject CatalogContext Catalog;
 @inject ReviewsContext Reviews;
+@inject ShowsContext Shows;
+
 @{
     Layout = "_Layout";
 }
@@ -55,19 +58,56 @@
         return "just now";
     }
 
-    //public async Task<IActionResult> OnPostDelete([FromForm] int commentId)
-    //{
-    //    if (!ModelState.IsValid)
-    //    {
-    //        return Page();
-    //    }
+    public async Task<IActionResult> OnPostDelete([FromForm] int commentId)
+    {
+        if (!ModelState.IsValid)
+        {
+            return Page();
+        }
 
-    //    var review = await Reviews.Reviews.FindAsync(commentId);
-    //    if (!review.Details.AuthorId.Equals(User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
-    //    {
-    //        return
-    //    }
-    //}
+        var review = await Reviews.Reviews.FindAsync(commentId);
+        if (!review.Details.AuthorId.Equals(User.FindFirst(ClaimTypes.NameIdentifier)?.Value))
+        {
+            return Page();
+        }
+
+        review.Details.Body = null;
+        await Reviews.SaveChangesAsync();
+
+        return RedirectToPage();
+    }
+
+    [Authorize]
+    public async Task<IActionResult> OnPostComment([FromRoute] int id, [FromQuery]int? replyTo, [FromForm]string comment)
+    {
+        if (!ModelState.IsValid)
+        {
+            return Page();
+        }
+
+        if (!User.Identity.IsAuthenticated)
+        {
+            return Page();
+        }
+
+        var newReview = new Review()
+        {
+            Details = new ReviewDetails
+            {
+                Author = User.Identity.Name,
+                AuthorId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value,
+                Body = comment,
+                PublishDate = DateTimeOffset.UtcNow
+            },
+            ReplyToId = replyTo,
+            TopicId = id
+        };
+
+        Reviews.Reviews.Add(newReview);
+        await Reviews.SaveChangesAsync();
+
+        return RedirectToPage();
+    }
 }
 
 @{
@@ -83,6 +123,10 @@
         .SingleOrDefaultAsync();
 
     var artists = movie.Cast.Select(c => c.Artist).ToList();
+}
+
+@{ 
+    var playingOn = await Shows.Shows.Where(s => s.MovieId == Id).CountAsync();
 }
 
 <style>
@@ -179,9 +223,28 @@
         <p><span>Language</span> @movie.Details.Language</p>
         <p><span>Country</span> @movie.Details.Country</p>
     </section>
+    <section>
+        <h2>Playing on @playingOn theater@(playingOn > 1 ? "s" : "") <a asp-page="/Shows/Index" asp-route-movieId="@Id">(View more)</a></h2>
+    </section>
     <section class="movie-comments">
         <h2>Reviews</h2>
-        @foreach (var review in CreateFlattenedReviewsList(comments))
+        @{
+            var i = 1;
+        }
+
+        <script type="text/javascript">
+            var showCommentBox = function (i) {
+                var checkbox = document.querySelector('#reply-comment-' + i);
+                var box = document.querySelector('#comment-box-' + i);
+                checkbox.addEventListener('change', function () {
+                    box.classList.toggle('comment-box');
+                });
+            };
+        </script>
+        @{ 
+            var flattenedReviews = CreateFlattenedReviewsList(comments);
+        }
+        @foreach (var review in flattenedReviews)
         {
             <section class="movie-comment">
                 <header>
@@ -191,8 +254,9 @@
                         {
                             <form class="movie-comment-remove" asp-page-handler="delete" asp-route-id="@Id">
                                 <input type="hidden" name="CommentId" value="@review.Id" />
-                                <input type="submit" value="Remove" /></form>
-                                <span>@CalculateTime(review)</span>
+                                <input type="submit" value="Remove" />
+                            </form>
+                            <span>@CalculateTime(review)</span>
                         }
                         else
                         {
@@ -205,10 +269,61 @@
                         }
                     </div>
                 </header>
-                <p class="movie-comment-content">@review.Details.Body</p>
+                <div class="movie-comment-content">
+                    <p>@(review.Details.Body ?? "[deleted]")</p>
+                    @if (review.Details.Body != null && User.Identity.IsAuthenticated)
+                    {
+                        <span class="movie-comment-reply">
+                            <input id="reply-comment-@i" type="checkbox" />
+                            <label for="reply-comment-@i">Reply</label>
+                        </span>
+                        <form id="comment-box-@i" class="comment-box" asp-page-handler="Comment" asp-route-id="@Id" asp-route-replyTo="@review.Id">
+                            <textarea name="comment" class="comment-surface"></textarea>
+                            <input type="submit" value="comment" />
+                        </form>
+                    }
+                    <script type="text/javascript">
+                    (function () {
+                        document.addEventListener("DOMContentLoaded", function () {
+                            showCommentBox(@i);
+                        });
+                    })();
+                    </script>
+                </div>
+                @{i++;}
             </section>
-        }
+         }
     </section>
+
+    <style type="text/css">
+        .movie-comment-content p {
+            display: inline;
+        }
+
+        .movie-comment-reply {
+            float: right;
+        }
+
+        .comment-box {
+            display: none;
+        }
+
+        .comment-surface {
+            width: 100%;
+        }
+
+        .movie-comment-reply * {
+            margin: 0px;
+            padding: 0px;
+        }
+
+        .movie-comment-reply input[type=checkbox] {
+            display: none;
+        }
+
+            .movie-comment-reply input[type=checkbox]:checked + label {
+            }
+    </style>
 
     <h2>Cast</h2>
     <ul class="cast">

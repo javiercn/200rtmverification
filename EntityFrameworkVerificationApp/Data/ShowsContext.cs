@@ -46,6 +46,7 @@ namespace EntityFrameworkVerificationApp.Data
     public class Theater
     {
         public int Id { get; set; }
+        public string Name { get; set; }
         public Address Location { get; set; }
         public int Zones { get; set; }
         public int RowsPerZone { get; set; }

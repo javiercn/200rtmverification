@@ -44,6 +44,7 @@ namespace EntityFrameworkVerificationApp.Tests
             context.AddRange(artists);
             LinkCast();
 
+
             await context.SaveChangesAsync();
 
             IEnumerable<Movie> CreateMovies(int seed)
