@@ -160,7 +160,6 @@ namespace EntityFrameworkVerificationApp.Tests
                     yield return new Session
                     {
                         Id = show.Id,
-                        Price = 10 + i,
                         Start = DateTimeOffset.UtcNow.AddDays(-number),
                         Seats = CreateSeats(show).ToList()
                     };

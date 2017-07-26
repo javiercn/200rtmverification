@@ -4,7 +4,7 @@
 @using System.Security.Claims;
 @inject CatalogContext Catalog;
 @inject ReviewsContext Reviews;
-@inject ShowsContext Shows;
+@inject ShowsContext ShowsContext;
 
 @{
     Layout = "_Layout";
@@ -126,7 +126,7 @@
 }
 
 @{ 
-    var playingOn = await Shows.Shows.Where(s => s.MovieId == Id).CountAsync();
+    var playingOn = await ShowsContext.Shows.Where(s => s.MovieId == Id).CountAsync();
 }
 
 <style>

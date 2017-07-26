@@ -5,7 +5,43 @@
 }
 
 <style type="text/css">
+    ul {
+        list-style: none;
+    }
 
+        ul.stars {
+            font-size: 0px;
+        }
+
+        ul.stars li {
+            display: inline;
+            font-size: 14px;
+        }
+
+    li.star + li.star:after {
+        content: ",";
+        margin:0px;
+        padding: 0px;
+    }
+
+    li:first-of-type:after {
+        content: ",";
+        margin:0px;
+        padding: 0px;
+    }
+
+    li.star + li.star:last-of-type:after {
+        content: "";
+    }
+
+    li.star {
+        margin: 0px;
+        padding: 0px;
+    }
+    ul.stars{
+        margin: 0px;
+        padding: 0px;
+    }
 </style>
 
 <article>
@@ -17,33 +53,32 @@
             <li>@Model.Movie.Description</li>
             <li>
                 Stars:
-                <ul>
+                <ul class="stars">
                     @for (int i = 0; i < Model.Cast.Count; i++)
                     {
-                        <li>@Model.Cast[i].PersonalInformation.GivenName @Model.Cast[i].PersonalInformation.LastName</li>
-                    }
+                    <li class="star"><a asp-page="/Artists/Profile/Index" asp-route-id="@Model.Cast[i].Id">@Model.Cast[i].PersonalInformation.GivenName @Model.Cast[i].PersonalInformation.LastName</a></li> }
                 </ul>
             </li>
         </ul>
     </section>
     <section class="movie-shows">
         <ul>
-        @foreach (var show in Model.Shows)
-        {
-            var location = show.Theater.Location;
-            <li>
-                <div>
-                    <h4>@show.Theater.Name</h4>
-                    <p>@location.Street, @location.City @location.Province @location.ZipCode</p>
-                    <ul>
-                        @foreach (var session in Model.GetTodaysSessions(show))
-                        {
-                            <li>@session.Start.TimeOfDay</li>
-                        }
-                    </ul>
-                </div>
-            </li>
-        }
+            @foreach (var show in Model.Shows)
+            {
+                var location = show.Theater.Location;
+                <li>
+                    <div>
+                        <h4>@show.Theater.Name</h4>
+                        <p>@location.Street, @location.City @location.Province @location.ZipCode</p>
+                        <ul>
+                            @foreach (var session in Model.GetTodaysSessions(show))
+                            {
+                                <li><a asp-page="/Sessions/Index" asp-route-id="@session.Id">@session.Start.TimeOfDay</a></li>
+                            }
+                        </ul>
+                    </div>
+                </li>
+            }
         </ul>
     </section>
 </article>

@@ -65,7 +65,6 @@ namespace EntityFrameworkVerificationApp.Data
     public class Session
     {
         public int Id { get; set; }
-        public decimal Price { get; set; }
         public DateTimeOffset Start { get; set; }
         public ICollection<Seat> Seats { get; set; }
     }

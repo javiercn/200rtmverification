@@ -34,6 +34,9 @@ namespace EntityFrameworkVerificationApp
             services.AddDbContext<ShowsContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("Shows")));
 
+            services.AddDbContext<BillingContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("Billing")));
+
             if (Environment.IsDevelopment())
             {
                 services.AddTransient<IStartupFilter, DatabaseInitializer>();
@@ -161,15 +164,48 @@ namespace EntityFrameworkVerificationApp
                             {
                                 new Session
                                 {
-                                    Start = DateTimeOffset.UtcNow.Date + TimeSpan.FromHours(16)
+                                    Start = DateTimeOffset.UtcNow.Date + TimeSpan.FromHours(16),
+                                    Seats = Enumerable.Range(0,10*5).Select(s => new Seat
+                                    {
+                                        Zone = 0,
+                                        Status = 0,
+                                        Number = s
+                                    }).Concat(Enumerable.Range(0,10*5).Select(s => new Seat
+                                    {
+                                        Zone = 1,
+                                        Status = 0,
+                                        Number = s
+                                    })).ToList()
                                 },
                                 new Session
                                 {
-                                    Start = DateTimeOffset.UtcNow.Date + TimeSpan.FromHours(19)
+                                    Start = DateTimeOffset.UtcNow.Date + TimeSpan.FromHours(19),
+                                    Seats = Enumerable.Range(0,10*5).Select(s => new Seat
+                                    {
+                                        Zone = 0,
+                                        Status = 0,
+                                        Number = s
+                                    }).Concat(Enumerable.Range(0,10*5).Select(s => new Seat
+                                    {
+                                        Zone = 1,
+                                        Status = 0,
+                                        Number = s
+                                    })).ToList()
                                 },
                                 new Session
                                 {
-                                    Start = DateTimeOffset.UtcNow.Date + TimeSpan.FromHours(21)
+                                    Start = DateTimeOffset.UtcNow.Date + TimeSpan.FromHours(21),
+                                    Seats = Enumerable.Range(0,10*5).Select(s => new Seat
+                                    {
+                                        Zone = 0,
+                                        Status = 0,
+                                        Number = s
+                                    }).Concat(Enumerable.Range(0,10*5).Select(s => new Seat
+                                    {
+                                        Zone = 1,
+                                        Status = 0,
+                                        Number = s
+                                    })).ToList()
                                 }
                             }
                         },
@@ -195,20 +231,76 @@ namespace EntityFrameworkVerificationApp
                             {
                                 new Session
                                 {
-                                    Start = DateTimeOffset.UtcNow.Date + TimeSpan.FromHours(17)
+                                    Start = DateTimeOffset.UtcNow.Date + TimeSpan.FromHours(17),
+                                    Seats = Enumerable.Range(0,15*8).Select(s => new Seat
+                                    {
+                                        Zone = 0,
+                                        Status = 0,
+                                        Number = s
+                                    }).Concat(Enumerable.Range(0,15*8).Select(s => new Seat
+                                    {
+                                        Zone = 1,
+                                        Status = 0,
+                                        Number = s
+                                    }))
+                                    .Concat(Enumerable.Range(0,15*8).Select(s => new Seat
+                                    {
+                                        Zone = 2,
+                                        Status = 0,
+                                        Number = s
+                                    })).ToList()
                                 },
                                 new Session
                                 {
-                                    Start = DateTimeOffset.UtcNow.Date + TimeSpan.FromHours(20)
+                                    Start = DateTimeOffset.UtcNow.Date + TimeSpan.FromHours(20),
+                                    Seats = Enumerable.Range(0,15*8).Select(s => new Seat
+                                    {
+                                        Zone = 0,
+                                        Status = 0,
+                                        Number = s
+                                    }).Concat(Enumerable.Range(0,15*8).Select(s => new Seat
+                                    {
+                                        Zone = 1,
+                                        Status = 0,
+                                        Number = s
+                                    }))
+                                    .Concat(Enumerable.Range(0,15*8).Select(s => new Seat
+                                    {
+                                        Zone = 2,
+                                        Status = 0,
+                                        Number = s
+                                    })).ToList()
                                 },
                                 new Session
                                 {
-                                    Start = DateTimeOffset.UtcNow.Date + TimeSpan.FromHours(22)
+                                    Start = DateTimeOffset.UtcNow.Date + TimeSpan.FromHours(22),
+                                    Seats = Enumerable.Range(0,15*8).Select(s => new Seat
+                                    {
+                                        Zone = 0,
+                                        Status = 0,
+                                        Number = s
+                                    }).Concat(Enumerable.Range(0,15*8).Select(s => new Seat
+                                    {
+                                        Zone = 1,
+                                        Status = 0,
+                                        Number = s
+                                    }))
+                                    .Concat(Enumerable.Range(0,15*8).Select(s => new Seat
+                                    {
+                                        Zone = 2,
+                                        Status = 0,
+                                        Number = s
+                                    })).ToList()
                                 }
                             }
                         }
                     });
                     shows.SaveChanges();
+
+                    var billing = scope.ServiceProvider.GetRequiredService<BillingContext>();
+                    billing.Database.EnsureDeleted();
+                    billing.Database.EnsureCreated();
+
                 }
 
                 IEnumerable<Movie> CreateMovies(int seed)
