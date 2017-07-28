@@ -45,8 +45,7 @@ namespace EntityFrameworkVerificationApp
 
             services.AddMvc()
                 .AddRazorPagesOptions(rpo =>
-                    rpo.Conventions.AuthorizeFolder("/")
-                       .AllowAnonymousToFolder("/")
+                    rpo.Conventions
                        .AuthorizeFolder("/Billing"))
                 .AddCookieTempDataProvider()
                 .AddRazorOptions(r => r.PageViewLocationFormats.Add("/Pages/Shared/{0}.cshtml"));

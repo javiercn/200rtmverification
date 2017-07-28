@@ -65,6 +65,14 @@ namespace EntityFrameworkVerificationApp.Data
         public int Id { get; set; }
         public int Code { get; set; }
         public decimal Price { get; set; }
+
+        public ItemStatus Status { get; set; }
+    }
+
+    public enum ItemStatus
+    {
+        Available,
+        Sold
     }
 
     public class CreditCard

@@ -50,7 +50,13 @@
                 {
                     @if (seat.Status == 0)
                     {
-                    <a class="seat seat-free" asp-page="/Billing/Checkout/Index" asp-route-code="@seat.Code">
+                    <a 
+                       class="seat seat-free"
+                       asp-page="/Billing/Checkout/Index"
+                       asp-route-code="@seat.Code"
+                       asp-route-movieId="@Model.CurrentShow.MovieId"
+                       asp-route-showId="@Model.CurrentShow.Id"
+                       asp-route-sessionId="@Model.CurrentSession.Id">
                         <svg xmlns="http://www.w3.org/2000/svg">
                             <rect class="seat seat-free" />
                         </svg>

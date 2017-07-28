@@ -1,51 +1,43 @@
-﻿@page "{code}"
+﻿@page "{code?}"
 @using System.Linq;
 @model IndexModel
 @{
     Layout = "_Layout";
-    var billingAddresses = Model.CurrentCustomer?.Invoices?.Select(i => i.BillingAddress)?.Distinct()?.ToArray() ??
-        new Address[]{
-            new Address
-            {
-                Street = "Street 1",
-                ZipCode = "111111",
-                City = "City 1",
-                Province = "State 1",
-                Country = "Country 1",
-            },
-            new Address
-            {
-                Street = "Street 2",
-                ZipCode = "22222",
-                City = "City 2",
-                Province = "State 2",
-                Country = "Country 2",
-            }
-        };
+    var billingAddresses = Model.CurrentCustomer?.Invoices?.Select(i => i.BillingAddress)?.Distinct()?.ToArray() ?? Array.Empty<Address>();
+    ;
 }
 
 <article>
     <section class="item-details">
-        <h1><movie-title movie-id="@Model.Movie"></movie-title></h1>
-        <session-details show-id="@Model.Show" session-id="@Model.Session" seat-code="@Model.Code"></session-details>
+        <h1><movie-title movie-id="@Model.MovieId"></movie-title></h1>
+        <session-details show-id="@Model.ShowId" session-id="@Model.SessionId" seat-code="@Model.Code"></session-details>
     </section>
-    <form asp-page-handler="Buy" asp-route-c>
+    <form 
+          asp-page-handler="Buy"
+          asp-route-code="@Model.Code"
+          asp-route-movieId="@Model.MovieId"
+          asp-route-showId="@Model.ShowId"
+          asp-route-sessionId="@Model.SessionId">
         <fieldset name="credit-card-info">
             <p>
-                <label asp-for="CurrentCustomer.CreditCard.FullName">Full name on card</label>
-                <input asp-for="CurrentCustomer.CreditCard.FullName" />
+                <label asp-for="Checkout.CreditCardDetails.FullName">Full name on card</label>
+                <input asp-for="Checkout.CreditCardDetails.FullName" value="@Model.CurrentCustomer?.CreditCard?.FullName" />
             </p>
             <p>
-                <label asp-for="CurrentCustomer.CreditCard.Number">Card number</label>
-                <input type="text" asp-for="CurrentCustomer.CreditCard.Number" />
+                <label asp-for="Checkout.CreditCardDetails.Number">Card number</label>
+                <input asp-for="Checkout.CreditCardDetails.Number" value="@Model.CurrentCustomer?.CreditCard?.Number" />
             </p>
             <p>
-                <label asp-for="CurrentCustomer.CreditCard.SecurityCode">CVS</label>
-                <input asp-for="CurrentCustomer.CreditCard.SecurityCode" value="" />
+                <label asp-for="Checkout.CreditCardDetails.SecurityCode">CVS</label>
+                <input asp-for="Checkout.CreditCardDetails.SecurityCode" value="@Model.CurrentCustomer?.CreditCard?.SecurityCode" />
             </p>
             <p>
-                <label asp-for="CurrentCustomer.CreditCard.Expires">Expiration</label>
-                <input type="month" asp-for="CurrentCustomer.CreditCard.Expires" />
+                <label asp-for="Checkout.CreditCardDetails.Expires">Expiration</label>
+                <input type="month" asp-for="Checkout.CreditCardDetails.Expires" value="@Model.CurrentCustomer?.CreditCard?.Expires" />
+            </p>
+            <p>
+                <label asp-for="Checkout.SaveNewCreditCardDetails">Save new credit card details</label>
+                <input type="checkbox" asp-for="Checkout.SaveNewCreditCardDetails" />
             </p>
         </fieldset>
         <select id="billing-address-select">
@@ -60,50 +52,49 @@
                 var billingAddress = billingAddresses[i];
             <fieldset class="@(i == 0 ? "address-selected" : "")" data-index="@i" name="billing-address-@i">
                 <p>
-                    <label asp-for="BillingAddress.Street">Street</label>
-                    <input readonly asp-for="BillingAddress.Street" value="@billingAddress.Street" />
+                    <label asp-for="Checkout.BillingAddress.Street">Street</label>
+                    <input readonly asp-for="Checkout.BillingAddress.Street" value="@billingAddress.Street" />
                 </p>
                 <p>
-                    <label asp-for="BillingAddress.ZipCode">Zip code</label>
-                    <input readonly asp-for="BillingAddress.ZipCode" value="@billingAddress.ZipCode" />
+                    <label asp-for="Checkout.BillingAddress.ZipCode">Zip code</label>
+                    <input readonly asp-for="Checkout.BillingAddress.ZipCode" value="@billingAddress.ZipCode" />
                 </p>
                 <p>
-                    <label asp-for="BillingAddress.City">City</label>
-                    <input readonly asp-for="BillingAddress.City" value="@billingAddress.City" />
+                    <label asp-for="Checkout.BillingAddress.City">City</label>
+                    <input readonly asp-for="Checkout.BillingAddress.City" value="@billingAddress.City" />
                 </p>
                 <p>
-                    <label asp-for="BillingAddress.Province">State</label>
-                    <input readonly asp-for="BillingAddress.Province" value="@billingAddress.Province" />
+                    <label asp-for="Checkout.BillingAddress.Province">State</label>
+                    <input readonly asp-for="Checkout.BillingAddress.Province" value="@billingAddress.Province" />
                 </p>
                 <p>
-                    <label asp-for="BillingAddress.Country">Country</label>
-                    <input readonly asp-for="BillingAddress.Country" value="@billingAddress.Country" />
+                    <label asp-for="Checkout.BillingAddress.Country">Country</label>
+                    <input readonly asp-for="Checkout.BillingAddress.Country" value="@billingAddress.Country" />
                 </p>
             </fieldset>
         }
         <fieldset class="@(billingAddresses.Length == 0 ? "address-selected" : "")" data-index="@billingAddresses.Length" name="billing-address-@billingAddresses.Length">
             <p>
-                <label asp-for="BillingAddress.Street">Street</label>
-                <input asp-for="BillingAddress.Street" />
+                <label asp-for="Checkout.BillingAddress.Street">Street</label>
+                <input asp-for="Checkout.BillingAddress.Street" />
             </p>
             <p>
-                <label asp-for="BillingAddress.ZipCode">Zip code</label>
-                <input asp-for="BillingAddress.ZipCode" />
+                <label asp-for="Checkout.BillingAddress.ZipCode">Zip code</label>
+                <input asp-for="Checkout.BillingAddress.ZipCode" />
             </p>
             <p>
-                <label asp-for="BillingAddress.City">City</label>
-                <input asp-for="BillingAddress.City" />
+                <label asp-for="Checkout.BillingAddress.City">City</label>
+                <input asp-for="Checkout.BillingAddress.City" />
             </p>
             <p>
-                <label asp-for="BillingAddress.Province">State</label>
-                <input asp-for="BillingAddress.Province" />
+                <label asp-for="Checkout.BillingAddress.Province">State</label>
+                <input asp-for="Checkout.BillingAddress.Province" />
             </p>
             <p>
-                <label asp-for="BillingAddress.Country">Country</label>
-                <input asp-for="BillingAddress.Country" />
+                <label asp-for="Checkout.BillingAddress.Country">Country</label>
+                <input asp-for="Checkout.BillingAddress.Country" />
             </p>
         </fieldset>
-        <input type="hidden" name="Code" value="@Model.Code" />
         <input type="submit" value="buy" />
     </form>
     <style type="text/css">
