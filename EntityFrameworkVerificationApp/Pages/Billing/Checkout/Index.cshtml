@@ -1,0 +1,139 @@
+﻿@page "{code}"
+@using System.Linq;
+@model IndexModel
+@{
+    Layout = "_Layout";
+    var billingAddresses = Model.CurrentCustomer?.Invoices?.Select(i => i.BillingAddress)?.Distinct()?.ToArray() ??
+        new Address[]{
+            new Address
+            {
+                Street = "Street 1",
+                ZipCode = "111111",
+                City = "City 1",
+                Province = "State 1",
+                Country = "Country 1",
+            },
+            new Address
+            {
+                Street = "Street 2",
+                ZipCode = "22222",
+                City = "City 2",
+                Province = "State 2",
+                Country = "Country 2",
+            }
+        };
+}
+
+<article>
+    <section class="item-details">
+        <h1><movie-title movie-id="@Model.Movie"></movie-title></h1>
+        <session-details show-id="@Model.Show" session-id="@Model.Session" seat-code="@Model.Code"></session-details>
+    </section>
+    <form asp-page-handler="Buy" asp-route-c>
+        <fieldset name="credit-card-info">
+            <p>
+                <label asp-for="CurrentCustomer.CreditCard.FullName">Full name on card</label>
+                <input asp-for="CurrentCustomer.CreditCard.FullName" />
+            </p>
+            <p>
+                <label asp-for="CurrentCustomer.CreditCard.Number">Card number</label>
+                <input type="text" asp-for="CurrentCustomer.CreditCard.Number" />
+            </p>
+            <p>
+                <label asp-for="CurrentCustomer.CreditCard.SecurityCode">CVS</label>
+                <input asp-for="CurrentCustomer.CreditCard.SecurityCode" value="" />
+            </p>
+            <p>
+                <label asp-for="CurrentCustomer.CreditCard.Expires">Expiration</label>
+                <input type="month" asp-for="CurrentCustomer.CreditCard.Expires" />
+            </p>
+        </fieldset>
+        <select id="billing-address-select">
+            @for (var i = 0; i < billingAddresses.Length; i++)
+            {
+                <option data-index="@i" selected="@(i == 0)" value="@i">@(billingAddresses[i].Street)</option>
+            }
+            <option value="@(billingAddresses.Length)" selected="@(billingAddresses.Length == 0)">New</option>
+        </select>
+        @for (var i = 0; i < billingAddresses.Length; i++)
+            {
+                var billingAddress = billingAddresses[i];
+            <fieldset class="@(i == 0 ? "address-selected" : "")" data-index="@i" name="billing-address-@i">
+                <p>
+                    <label asp-for="BillingAddress.Street">Street</label>
+                    <input readonly asp-for="BillingAddress.Street" value="@billingAddress.Street" />
+                </p>
+                <p>
+                    <label asp-for="BillingAddress.ZipCode">Zip code</label>
+                    <input readonly asp-for="BillingAddress.ZipCode" value="@billingAddress.ZipCode" />
+                </p>
+                <p>
+                    <label asp-for="BillingAddress.City">City</label>
+                    <input readonly asp-for="BillingAddress.City" value="@billingAddress.City" />
+                </p>
+                <p>
+                    <label asp-for="BillingAddress.Province">State</label>
+                    <input readonly asp-for="BillingAddress.Province" value="@billingAddress.Province" />
+                </p>
+                <p>
+                    <label asp-for="BillingAddress.Country">Country</label>
+                    <input readonly asp-for="BillingAddress.Country" value="@billingAddress.Country" />
+                </p>
+            </fieldset>
+        }
+        <fieldset class="@(billingAddresses.Length == 0 ? "address-selected" : "")" data-index="@billingAddresses.Length" name="billing-address-@billingAddresses.Length">
+            <p>
+                <label asp-for="BillingAddress.Street">Street</label>
+                <input asp-for="BillingAddress.Street" />
+            </p>
+            <p>
+                <label asp-for="BillingAddress.ZipCode">Zip code</label>
+                <input asp-for="BillingAddress.ZipCode" />
+            </p>
+            <p>
+                <label asp-for="BillingAddress.City">City</label>
+                <input asp-for="BillingAddress.City" />
+            </p>
+            <p>
+                <label asp-for="BillingAddress.Province">State</label>
+                <input asp-for="BillingAddress.Province" />
+            </p>
+            <p>
+                <label asp-for="BillingAddress.Country">Country</label>
+                <input asp-for="BillingAddress.Country" />
+            </p>
+        </fieldset>
+        <input type="hidden" name="Code" value="@Model.Code" />
+        <input type="submit" value="buy" />
+    </form>
+    <style type="text/css">
+        fieldset[name^=billing-address-]{
+            display:none;
+        }
+        fieldset[name^=billing-address-].address-selected {
+            display:block;
+        }
+        fieldset input[readonly]{
+            background-color: lightgrey;
+        }
+    </style>
+    <script type="text/javascript">
+        (function () {
+            document.addEventListener("DOMContentLoaded", function () {
+                var select = document.querySelector("#billing-address-select");
+                select.addEventListener("change", function () {
+                    var index = select.selectedIndex;
+
+                    var selectedItem = select.options[index];
+                    var fieldSetIndex = Number.parseInt(selectedItem.value);
+                    var fieldSets = document.querySelectorAll("fieldset[name^=billing-address-]");
+                    fieldSets.forEach(f => f.classList.remove("address-selected"));
+                    fieldSets.forEach(f => f.disabled = true);
+                    var activeFieldSet = document.querySelector("fieldset[name=billing-address-" + fieldSetIndex + "]");
+                    activeFieldSet.disabled = false;
+                    activeFieldSet.classList.add("address-selected");
+                });
+            });
+        }())
+    </script>
+</article>

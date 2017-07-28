@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <Folder Include="Pages\Artists\Profile\" />
+    <Folder Include="Pages\Billing\Checkout\" />
     <Folder Include="Pages\Movies\" />
     <Folder Include="Pages\Sessions\" />
     <Folder Include="Pages\Shows\" />

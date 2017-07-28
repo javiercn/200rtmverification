@@ -23,6 +23,15 @@ namespace EntityFrameworkVerificationApp.Pages.Sessions
         public Show CurrentShow { get; set; }
         public Session CurrentSession { get; set; }
 
+        [TempData]
+        public int Movie { get; set; }
+
+        [TempData]
+        public int Show { get; set; }
+
+        [TempData]
+        public int Session { get; set; }
+
         public async Task OnGetAsync([FromRoute] int id)
         {
             var sessionAndShow = await Shows.Shows
@@ -37,6 +46,10 @@ namespace EntityFrameworkVerificationApp.Pages.Sessions
                     Session = s.Sessions.Single(ss => ss.Id == id)
                 })
                 .SingleOrDefaultAsync();
+
+            Movie = sessionAndShow.Show.MovieId;
+            Show = sessionAndShow.Show.Id;
+            Session = sessionAndShow.Session.Id;
 
             CurrentSession = sessionAndShow.Session;
             CurrentShow = sessionAndShow.Show;

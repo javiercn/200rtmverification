@@ -1,0 +1,10 @@
+﻿@model SessionDetails
+@{
+    var location = Model.Show.Theater.Location;
+    var seatCode = $"{Model.Seat.Number / Model.Show.Theater.SeatsPerRow}-{Model.Seat.Number % Model.Show.Theater.SeatsPerRow}";
+}
+
+<h2>@Model.Show.Theater.Name</h2>
+<p>@location.Street, @location.ZipCode @location.City @location.Province</p>
+<p>@Model.Session.Start.Date - @Model.Session.Start.TimeOfDay</p>
+<p>Zone @Model.Seat.Zone, Seat @seatCode</p>

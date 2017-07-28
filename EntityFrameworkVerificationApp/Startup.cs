@@ -43,7 +43,13 @@ namespace EntityFrameworkVerificationApp
             }
             services.AddAzureAdB2CAuthentication();
 
-            services.AddMvc().AddRazorPagesOptions(rpo => rpo.Conventions.AuthorizeFolder("/").AllowAnonymousToFolder("/"));
+            services.AddMvc()
+                .AddRazorPagesOptions(rpo =>
+                    rpo.Conventions.AuthorizeFolder("/")
+                       .AllowAnonymousToFolder("/")
+                       .AuthorizeFolder("/Billing"))
+                .AddCookieTempDataProvider()
+                .AddRazorOptions(r => r.PageViewLocationFormats.Add("/Pages/Shared/{0}.cshtml"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -137,6 +143,7 @@ namespace EntityFrameworkVerificationApp
                     });
                     reviews.SaveChanges();
 
+                    var seatCode = 1;
                     var shows = scope.ServiceProvider.GetRequiredService<ShowsContext>();
                     shows.Database.EnsureDeleted();
                     shows.Database.EnsureCreated();
@@ -169,11 +176,13 @@ namespace EntityFrameworkVerificationApp
                                     {
                                         Zone = 0,
                                         Status = 0,
+                                        Code = seatCode++,
                                         Number = s
                                     }).Concat(Enumerable.Range(0,10*5).Select(s => new Seat
                                     {
                                         Zone = 1,
                                         Status = 0,
+                                        Code = seatCode++,
                                         Number = s
                                     })).ToList()
                                 },
@@ -184,11 +193,13 @@ namespace EntityFrameworkVerificationApp
                                     {
                                         Zone = 0,
                                         Status = 0,
+                                        Code = seatCode++,
                                         Number = s
                                     }).Concat(Enumerable.Range(0,10*5).Select(s => new Seat
                                     {
                                         Zone = 1,
                                         Status = 0,
+                                        Code = seatCode++,
                                         Number = s
                                     })).ToList()
                                 },
@@ -199,11 +210,13 @@ namespace EntityFrameworkVerificationApp
                                     {
                                         Zone = 0,
                                         Status = 0,
+                                        Code = seatCode++,
                                         Number = s
                                     }).Concat(Enumerable.Range(0,10*5).Select(s => new Seat
                                     {
                                         Zone = 1,
                                         Status = 0,
+                                        Code = seatCode++,
                                         Number = s
                                     })).ToList()
                                 }
@@ -236,17 +249,20 @@ namespace EntityFrameworkVerificationApp
                                     {
                                         Zone = 0,
                                         Status = 0,
+                                        Code = seatCode++,
                                         Number = s
                                     }).Concat(Enumerable.Range(0,15*8).Select(s => new Seat
                                     {
                                         Zone = 1,
                                         Status = 0,
+                                        Code = seatCode++,
                                         Number = s
                                     }))
                                     .Concat(Enumerable.Range(0,15*8).Select(s => new Seat
                                     {
                                         Zone = 2,
                                         Status = 0,
+                                        Code = seatCode++,
                                         Number = s
                                     })).ToList()
                                 },
@@ -257,17 +273,20 @@ namespace EntityFrameworkVerificationApp
                                     {
                                         Zone = 0,
                                         Status = 0,
+                                        Code = seatCode++,
                                         Number = s
                                     }).Concat(Enumerable.Range(0,15*8).Select(s => new Seat
                                     {
                                         Zone = 1,
                                         Status = 0,
+                                        Code = seatCode++,
                                         Number = s
                                     }))
                                     .Concat(Enumerable.Range(0,15*8).Select(s => new Seat
                                     {
                                         Zone = 2,
                                         Status = 0,
+                                        Code = seatCode++,
                                         Number = s
                                     })).ToList()
                                 },
@@ -278,17 +297,20 @@ namespace EntityFrameworkVerificationApp
                                     {
                                         Zone = 0,
                                         Status = 0,
+                                        Code = seatCode++,
                                         Number = s
                                     }).Concat(Enumerable.Range(0,15*8).Select(s => new Seat
                                     {
                                         Zone = 1,
                                         Status = 0,
+                                        Code = seatCode++,
                                         Number = s
                                     }))
                                     .Concat(Enumerable.Range(0,15*8).Select(s => new Seat
                                     {
                                         Zone = 2,
                                         Status = 0,
+                                        Code = seatCode++,
                                         Number = s
                                     })).ToList()
                                 }
@@ -300,6 +322,12 @@ namespace EntityFrameworkVerificationApp
                     var billing = scope.ServiceProvider.GetRequiredService<BillingContext>();
                     billing.Database.EnsureDeleted();
                     billing.Database.EnsureCreated();
+                    billing.Items.AddRange(shows.Seats.Select(s => new Item
+                    {
+                        Code = s.Code,
+                        Price = 11.0m
+                    }));
+                    billing.SaveChanges();
 
                 }
 

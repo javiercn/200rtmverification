@@ -27,13 +27,15 @@ namespace EntityFrameworkVerificationApp.Data
 
             modelBuilder.Entity<InvoiceLine>(invoiceLine =>
             {
-                invoiceLine.HasOne(line => line.Item).WithMany();
+                invoiceLine.HasOne(line => line.Item).WithOne().IsRequired(false);
             });
+
+            modelBuilder.Entity<Item>(item => item.HasIndex(i => i.Code).IsUnique());
         }
 
         public DbSet<Customer> Customers { get; set; }
-        public DbSet<Invoice> Orders { get; set; }
-        public DbSet<InvoiceLine> OrderLines { get; set; }
+        public DbSet<Invoice> Invoice { get; set; }
+        public DbSet<InvoiceLine> InvoiceLine { get; set; }
         public DbSet<Item> Items { get; set; }
     }
 
@@ -61,6 +63,7 @@ namespace EntityFrameworkVerificationApp.Data
     public class Item
     {
         public int Id { get; set; }
+        public int Code { get; set; }
         public decimal Price { get; set; }
     }
 

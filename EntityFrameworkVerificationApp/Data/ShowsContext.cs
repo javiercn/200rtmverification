@@ -27,6 +27,8 @@ namespace EntityFrameworkVerificationApp.Data
             {
                 session.HasMany(s => s.Seats);
             });
+
+            modelBuilder.Entity<Seat>(s => s.HasIndex(i => i.Code).IsUnique());
         }
 
         public DbSet<Show> Shows { get; set; }
@@ -53,13 +55,29 @@ namespace EntityFrameworkVerificationApp.Data
         public int SeatsPerRow { get; set; }
     }
 
-    public class Address
+    public class Address : IEquatable<Address>
     {
         public string Street { get; set; }
         public string ZipCode { get; set; }
         public string Province { get; set; }
         public string City { get; set; }
         public string Country { get; set; }
+
+        public bool Equals(Address other) => other != null &&
+            Street == other?.Street &&
+            ZipCode == other?.ZipCode &&
+            Province == other?.Province &&
+            City == other?.City &&
+            Country == other?.Country;
+
+        public override bool Equals(object obj) => Equals(obj as Address);
+
+        public override int GetHashCode() => 17 * 
+            (Street.GetHashCode() ^
+             ZipCode.GetHashCode() ^
+             Province.GetHashCode() ^
+             City.GetHashCode() ^
+             Country.GetHashCode());
     }
 
     public class Session
@@ -73,6 +91,7 @@ namespace EntityFrameworkVerificationApp.Data
     {
         public int Id { get; set; }
         public int Number { get; set; }
+        public int Code { get; set; }
         public int Zone { get; set; }
         public int Status { get; set; }
     }
