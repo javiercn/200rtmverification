@@ -1,130 +1,43 @@
 ﻿@page "{code?}"
-@using System.Linq;
 @model IndexModel
-@{
-    Layout = "_Layout";
-    var billingAddresses = Model.CurrentCustomer?.Invoices?.Select(i => i.BillingAddress)?.Distinct()?.ToArray() ?? Array.Empty<Address>();
-    ;
-}
 
 <article>
     <section class="item-details">
         <h1><movie-title movie-id="@Model.MovieId"></movie-title></h1>
         <session-details show-id="@Model.ShowId" session-id="@Model.SessionId" seat-code="@Model.Code"></session-details>
     </section>
-    <form 
-          asp-page-handler="Buy"
+    <form asp-page-handler="Buy"
           asp-route-code="@Model.Code"
           asp-route-movieId="@Model.MovieId"
           asp-route-showId="@Model.ShowId"
           asp-route-sessionId="@Model.SessionId">
         <fieldset name="credit-card-info">
-            <p>
-                <label asp-for="Checkout.CreditCardDetails.FullName">Full name on card</label>
-                <input asp-for="Checkout.CreditCardDetails.FullName" value="@Model.CurrentCustomer?.CreditCard?.FullName" />
-            </p>
-            <p>
-                <label asp-for="Checkout.CreditCardDetails.Number">Card number</label>
-                <input asp-for="Checkout.CreditCardDetails.Number" value="@Model.CurrentCustomer?.CreditCard?.Number" />
-            </p>
-            <p>
-                <label asp-for="Checkout.CreditCardDetails.SecurityCode">CVS</label>
-                <input asp-for="Checkout.CreditCardDetails.SecurityCode" value="@Model.CurrentCustomer?.CreditCard?.SecurityCode" />
-            </p>
-            <p>
-                <label asp-for="Checkout.CreditCardDetails.Expires">Expiration</label>
-                <input type="month" asp-for="Checkout.CreditCardDetails.Expires" value="@Model.CurrentCustomer?.CreditCard?.Expires" />
-            </p>
+            <partial template="_creditCard" for="Checkout.CreditCardDetails" value="@Model?.CurrentCustomer?.CreditCard"></partial>
             <p>
                 <label asp-for="Checkout.SaveNewCreditCardDetails">Save new credit card details</label>
                 <input type="checkbox" asp-for="Checkout.SaveNewCreditCardDetails" />
             </p>
         </fieldset>
         <select id="billing-address-select">
-            @for (var i = 0; i < billingAddresses.Length; i++)
+            @for (var i = 0; i < Model.BillingAddresses.Length; i++)
             {
-                <option data-index="@i" selected="@(i == 0)" value="@i">@(billingAddresses[i].Street)</option>
+                <option selected="@(i == 0)" value="@i">@(Model.BillingAddresses[i].Street)</option>
             }
-            <option value="@(billingAddresses.Length)" selected="@(billingAddresses.Length == 0)">New</option>
+            <option value="@(Model.BillingAddresses.Length)" selected="@(Model.BillingAddresses.Length == 0)">New</option>
         </select>
-        @for (var i = 0; i < billingAddresses.Length; i++)
+        @for (var i = 0; i < Model.BillingAddresses.Length; i++)
             {
-                var billingAddress = billingAddresses[i];
-            <fieldset class="@(i == 0 ? "address-selected" : "")" data-index="@i" name="billing-address-@i">
-                <p>
-                    <label asp-for="Checkout.BillingAddress.Street">Street</label>
-                    <input readonly asp-for="Checkout.BillingAddress.Street" value="@billingAddress.Street" />
-                </p>
-                <p>
-                    <label asp-for="Checkout.BillingAddress.ZipCode">Zip code</label>
-                    <input readonly asp-for="Checkout.BillingAddress.ZipCode" value="@billingAddress.ZipCode" />
-                </p>
-                <p>
-                    <label asp-for="Checkout.BillingAddress.City">City</label>
-                    <input readonly asp-for="Checkout.BillingAddress.City" value="@billingAddress.City" />
-                </p>
-                <p>
-                    <label asp-for="Checkout.BillingAddress.Province">State</label>
-                    <input readonly asp-for="Checkout.BillingAddress.Province" value="@billingAddress.Province" />
-                </p>
-                <p>
-                    <label asp-for="Checkout.BillingAddress.Country">Country</label>
-                    <input readonly asp-for="Checkout.BillingAddress.Country" value="@billingAddress.Country" />
-                </p>
+                var billingAddress = Model.BillingAddresses[i];
+            <fieldset class="@(i == 0 ? "address-selected" : "")" name="billing-address-@i">
+                <partial for="Checkout.BillingAddress" template="_billingAddress" value="billingAddress"></partial>
             </fieldset>
         }
-        <fieldset class="@(billingAddresses.Length == 0 ? "address-selected" : "")" data-index="@billingAddresses.Length" name="billing-address-@billingAddresses.Length">
-            <p>
-                <label asp-for="Checkout.BillingAddress.Street">Street</label>
-                <input asp-for="Checkout.BillingAddress.Street" />
-            </p>
-            <p>
-                <label asp-for="Checkout.BillingAddress.ZipCode">Zip code</label>
-                <input asp-for="Checkout.BillingAddress.ZipCode" />
-            </p>
-            <p>
-                <label asp-for="Checkout.BillingAddress.City">City</label>
-                <input asp-for="Checkout.BillingAddress.City" />
-            </p>
-            <p>
-                <label asp-for="Checkout.BillingAddress.Province">State</label>
-                <input asp-for="Checkout.BillingAddress.Province" />
-            </p>
-            <p>
-                <label asp-for="Checkout.BillingAddress.Country">Country</label>
-                <input asp-for="Checkout.BillingAddress.Country" />
-            </p>
+        <fieldset class="@(Model.BillingAddresses.Length == 0 ? "address-selected" : "")" name="billing-address-@Model.BillingAddresses.Length">
+            <partial for="Checkout.BillingAddress" template="_billingAddress" value="null"></partial>
         </fieldset>
         <input type="submit" value="buy" />
     </form>
-    <style type="text/css">
-        fieldset[name^=billing-address-]{
-            display:none;
-        }
-        fieldset[name^=billing-address-].address-selected {
-            display:block;
-        }
-        fieldset input[readonly]{
-            background-color: lightgrey;
-        }
-    </style>
-    <script type="text/javascript">
-        (function () {
-            document.addEventListener("DOMContentLoaded", function () {
-                var select = document.querySelector("#billing-address-select");
-                select.addEventListener("change", function () {
-                    var index = select.selectedIndex;
-
-                    var selectedItem = select.options[index];
-                    var fieldSetIndex = Number.parseInt(selectedItem.value);
-                    var fieldSets = document.querySelectorAll("fieldset[name^=billing-address-]");
-                    fieldSets.forEach(f => f.classList.remove("address-selected"));
-                    fieldSets.forEach(f => f.disabled = true);
-                    var activeFieldSet = document.querySelector("fieldset[name=billing-address-" + fieldSetIndex + "]");
-                    activeFieldSet.disabled = false;
-                    activeFieldSet.classList.add("address-selected");
-                });
-            });
-        }())
-    </script>
+        <script type="text/javascript" dom-ready="true">
+            site.setupAddressSelector();
+        </script>
 </article>

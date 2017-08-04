@@ -1,0 +1,21 @@
+﻿@model Address
+<p>
+    <label asp-for="Street">Street</label>
+    <input readonly="@(Model != null)" asp-for="Street" value="@Model?.Street" />
+</p>
+<p>
+    <label asp-for="ZipCode">Zip code</label>
+    <input readonly="@(Model != null)" asp-for="ZipCode" value="@Model?.ZipCode" />
+</p>
+<p>
+    <label asp-for="City">City</label>
+    <input readonly="@(Model != null)" asp-for="City" value="@Model?.City" />
+</p>
+<p>
+    <label asp-for="Province">State</label>
+    <input readonly="@(Model != null)" asp-for="Province" value="@Model?.Province" />
+</p>
+<p>
+    <label asp-for="Country">Country</label>
+    <input readonly="@(Model != null)" asp-for="Country" value="@Model?.Country" />
+</p>

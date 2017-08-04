@@ -1,84 +1,25 @@
 ﻿@page "{movieId}"
 @model IndexModel
-@{
-    Layout = "_Layout";
-}
-
-<style type="text/css">
-    ul {
-        list-style: none;
-    }
-
-        ul.stars {
-            font-size: 0px;
-        }
-
-        ul.stars li {
-            display: inline;
-            font-size: 14px;
-        }
-
-    li.star + li.star:after {
-        content: ",";
-        margin:0px;
-        padding: 0px;
-    }
-
-    li:first-of-type:after {
-        content: ",";
-        margin:0px;
-        padding: 0px;
-    }
-
-    li.star + li.star:last-of-type:after {
-        content: "";
-    }
-
-    li.star {
-        margin: 0px;
-        padding: 0px;
-    }
-    ul.stars{
-        margin: 0px;
-        padding: 0px;
-    }
-</style>
 
 <article>
     <section class="movie-brief">
         <h1>@Model.Movie.Title</h1>
         <img src="@Url.Content(Model.Movie.Details.PosterUrl)" />
-        <ul>
-            <li><a asp-page="/Movies/Index" asp-route-id="@Model.Movie.Id">@Model.Movie.Title</a></li>
-            <li>@Model.Movie.Description</li>
-            <li>
-                Stars:
-                <ul class="stars">
-                    @for (int i = 0; i < Model.Cast.Count; i++)
-                    {
-                    <li class="star"><a asp-page="/Artists/Profile/Index" asp-route-id="@Model.Cast[i].Id">@Model.Cast[i].PersonalInformation.GivenName @Model.Cast[i].PersonalInformation.LastName</a></li> }
-                </ul>
-            </li>
+        <a asp-page="/Movies/Index" asp-route-id="@Model.Movie.Id">@Model.Movie.Title</a>
+        @Model.Movie.Description
+        Stars:
+        <ul class="stars">
+            @for (int i = 0; i < Model.Cast.Count; i++)
+            {
+                <li class="star"><a asp-page="/Artists/Profile/Index" asp-route-id="@Model.Cast[i].Id">@Model.Cast[i].PersonalInformation.GivenName @Model.Cast[i].PersonalInformation.LastName</a></li>
+            }
         </ul>
     </section>
     <section class="movie-shows">
-        <ul>
-            @foreach (var show in Model.Shows)
-            {
-                var location = show.Theater.Location;
-                <li>
-                    <div>
-                        <h4>@show.Theater.Name</h4>
-                        <p>@location.Street, @location.City @location.Province @location.ZipCode</p>
-                        <ul>
-                            @foreach (var session in Model.GetTodaysSessions(show))
-                            {
-                                <li><a asp-page="/Sessions/Index" asp-route-id="@session.Id">@session.Start.TimeOfDay</a></li>
-                            }
-                        </ul>
-                    </div>
-                </li>
-            }
-        </ul>
+        <h2>All theaters playing</h2>
+        @foreach (var show in Model.Shows)
+        {
+            <partial template="_showSessions" value="show"></partial>
+        }
     </section>
 </article>

@@ -1,0 +1,13 @@
+﻿@model IEnumerable<Artist>
+<wrap-panel tag-name="ul" class="cast">
+    @foreach (var artist in Model)
+            {
+        <wrap-panel-item tag-name="li" class="artist">
+            <a asp-page="/Artists/Profile/Index" asp-route-id="@artist.Id"><img src="@Url.Content(artist.ImageUrl)" /></a>
+            <p>
+                @artist.PersonalInformation.GivenName @artist.PersonalInformation.LastName <br />
+                @artist.PersonalInformation.BirthDate.ToString("MM/dd/yyyy"), @artist.PersonalInformation.BirthPlace.City, @artist.PersonalInformation.BirthPlace.Country
+            </p>
+        </wrap-panel-item>
+    }
+</wrap-panel>

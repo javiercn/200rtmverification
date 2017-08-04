@@ -1,0 +1,98 @@
+﻿@model ICollection<Review>
+@{
+    var i = 1;
+}
+
+@functions{
+    public IList<Review> CreateFlattenedReviewsList()
+    {
+        return CreateFlattenedReviewsList(Model.Where(c => c.ReplyTo == null).ToList());
+
+        IList<Review> CreateFlattenedReviewsList(ICollection<Review> reviews)
+        {
+            if (reviews == null || reviews.Count == 0)
+            {
+                return Array.Empty<Review>();
+            }
+
+            var result = new List<Review>();
+            foreach (var review in reviews.OrderBy(r => r.Details.PublishDate))
+            {
+                result.Add(review);
+                result.AddRange(CreateFlattenedReviewsList(review.Replies));
+            }
+
+            return result;
+        }
+    }
+
+    public string CalculateTime(Review review)
+    {
+        var span = DateTimeOffset.UtcNow - review.Details.PublishDate;
+        if (span.Days > 365)
+        {
+            return span.Days / 365 == 1 ? "1 year ago" : $"{span.Days / 365} years ago";
+        }
+        if (span.Days > 0)
+        {
+            return span.Days == 1 ? "1 day ago" : $"{span.Days} days ago";
+        }
+        if (span.Hours > 0)
+        {
+            return span.Hours == 1 ? "1 hour ago" : $"{span.Hours} hours ago";
+        }
+        if (span.Minutes > 0)
+        {
+            return span.Minutes == 1 ? $"1 minute ago" : $"{span.Minutes} minutes ago";
+        }
+        if (span.Seconds > 0)
+        {
+            return span.Seconds == 1 ? $"1 second ago" : $"{span.Seconds} seconds ago";
+        }
+
+        return "just now";
+    }
+}
+
+@foreach (var review in CreateFlattenedReviewsList())
+{
+    <section class="movie-comment">
+        <header>
+            <a href="#@review.Id">#@review.Id @review.Details.Author</a>
+            <div class="movie-comment-details">
+                <form asp-auth="true" asp-user-id="@review.Details.AuthorId" class="movie-comment-remove" asp-page-handler="delete">
+                    <input type="hidden" name="CommentId" value="@review.Id" />
+                    <input type="submit" value="Remove" />
+                </form>
+                <span>@CalculateTime(review)</span>
+                @if (review.ReplyTo != null)
+                {
+                    <br />
+                        <span>Replies to <a href="#@review.ReplyToId">@review.ReplyTo.Details.Author</a></span>
+                }
+            </div>
+        </header>
+        <div class="movie-comment-content">
+            <p>@(review.Details.Body ?? "[deleted]")</p>
+            <asp-auth>
+                @if (review.Details.Body != null)
+                {
+                    <span class="movie-comment-reply">
+                        <input id="reply-comment-@i" type="checkbox" />
+                        <label for="reply-comment-@i">Reply</label>
+                    </span>
+                        <form id="comment-box-@i" class="comment-box" asp-page-handler="Comment" asp-route-replyTo="@review.Id">
+                            <textarea name="comment" class="comment-surface"></textarea>
+                            <input type="submit" value="comment" />
+                        </form>
+                }
+                <script type="text/javascript">
+                            document.addEventListener("DOMContentLoaded", function () {
+                                site.showCommentBox(@i);
+                            });
+                </script>
+            </asp-auth>
+        </div>
+        @{i++;}
+    </section>
+            }

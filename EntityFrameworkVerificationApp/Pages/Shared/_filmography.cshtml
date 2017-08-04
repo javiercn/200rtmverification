@@ -1,0 +1,10 @@
+﻿@model IEnumerable<Movie>
+<wrap-panel tag-name="ul" class="filmography">
+    @foreach (var movie in Model)
+            {
+        <wrap-panel tag-name="li" class="film">
+            <a asp-page="/Movies/Details" asp-route-id="@movie.Id"><img src="@Url.Content(movie.Details.PosterUrl)" /></a>
+            <h3>@movie.Title</h3>
+        </wrap-panel>
+    }
+</wrap-panel>

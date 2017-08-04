@@ -1,0 +1,17 @@
+﻿@model CreditCard
+<p>
+    <label asp-for="FullName">Full name on card</label>
+    <input asp-for="FullName" value="@Model?.FullName" />
+</p>
+<p>
+    <label asp-for="Number">Card number</label>
+    <input asp-for="Number" value="@Model?.Number" />
+</p>
+<p>
+    <label asp-for="SecurityCode">CVS</label>
+    <input asp-for="SecurityCode" value="@Model?.SecurityCode" />
+</p>
+<p>
+    <label asp-for="Expires">Expiration</label>
+    <input type="month" asp-for="Expires" value="@Model?.Expires.ToString("yyyy-MM")" />
+</p>

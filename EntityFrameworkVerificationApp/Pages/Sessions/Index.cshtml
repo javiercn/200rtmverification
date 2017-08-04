@@ -1,7 +1,6 @@
 ﻿@page "{id}"
 @model IndexModel
 @{
-    Layout = "_Layout";
     var location = Model.CurrentShow.Theater.Location;
     var zones = Model.CurrentShow.Theater.Zones;
     var theater = Model.CurrentShow.Theater;
@@ -11,28 +10,6 @@
     <h1>@Model.CurrentShow.Theater.Name</h1>
     <p>@location.Street, @location.City @location.Province @location.ZipCode</p>
     <style type="text/css">
-        .zones {
-            display: flex;
-            flex-wrap: nowrap;
-            justify-content: center;
-        }
-
-        div[class^="zone-"] ~ div[class^="zone-"] {
-            margin-left: 10px;
-        }
-
-        .seat {
-            width: 2em;
-            height: 2em;
-            margin: 1px;
-            fill: rgba(0, 0, 0, 0.00);
-            stroke-width: 1px;
-            stroke: black;
-        }
-
-        .seat-free{
-            fill: green;
-        }
     </style>
 
     <section class="zones">

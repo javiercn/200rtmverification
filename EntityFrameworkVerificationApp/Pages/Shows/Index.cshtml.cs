@@ -2,7 +2,6 @@ using EntityFrameworkVerificationApp.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -41,10 +40,5 @@ namespace EntityFrameworkVerificationApp.Pages.Shows
 
             Cast = Movie.Cast.Select(a => a.Artist).ToList();
         }
-
-        public IEnumerable<Session> GetTodaysSessions(Show show) => 
-            show.Sessions
-                .Where(s => s.Start.Date == DateTimeOffset.UtcNow.Date)
-                .OrderBy(s => s.Start);
     }
 }

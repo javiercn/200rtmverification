@@ -3,7 +3,9 @@ using EntityFrameworkVerificationApp.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -25,6 +27,8 @@ namespace EntityFrameworkVerificationApp.Pages.Billing.Checkout
 
         public Item CurrentItem { get; private set; }
 
+        public Address [] BillingAddresses { get; set; }
+
         [FromQuery]
         public int MovieId { get; set; }
 
@@ -44,14 +48,16 @@ namespace EntityFrameworkVerificationApp.Pages.Billing.Checkout
             var customers = await BillingContext.Customers.ToListAsync();
             CurrentCustomer = await BillingContext.Customers
                 .Include(c => c.Invoices)
+                .ThenInclude(i => i.BillingAddress)
                 .SingleOrDefaultAsync(c => c.Id == userId);
 
             CurrentItem = await BillingContext.Items.SingleAsync(s => s.Code == Code);
+
+            BillingAddresses = CurrentCustomer?.Invoices?.Select(i => i.BillingAddress)?.Distinct()?.ToArray() ?? Array.Empty<Address>();
         }
 
         public Task OnGetAsync()
         {
-            TempData.Keep();
             return InitializePage();
         }
 

@@ -1,0 +1,18 @@
+﻿@model Show
+@{
+    var location = Model.Theater.Location;
+    IEnumerable<Session> GetTodaysSessions(Show show) =>
+    show.Sessions
+        .Where(s => s.Start.Date == DateTimeOffset.UtcNow.Date)
+        .OrderBy(s => s.Start);
+}
+<section>
+    <h3>@Model.Theater.Name</h3>
+    <p>@location.Street, @location.City @location.Province @location.ZipCode</p>
+    <ul>
+        @foreach (var session in GetTodaysSessions(Model))
+            {
+            <li><a asp-page="/Sessions/Index" asp-route-id="@session.Id">@session.Start.TimeOfDay</a></li>
+        }
+    </ul>
+</section>
